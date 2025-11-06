@@ -1,38 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="code_editor">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>code_editor</title>
-  <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=0.75, maximum-scale=1.0">
+    <title>C++ Compiler</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+    <div id="app"></div>
+    
+    <script>
+        // Prevent zoom beyond 100%
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                
+                // Get current zoom level
+                let currentZoom = window.devicePixelRatio * 100;
+                
+                // If zooming in (Ctrl+Scroll up) and already at 100%, block it
+                if (e.deltaY < 0 && currentZoom >= 100) {
+                    return false;
+                }
+                
+                // If zooming out below 75%, block it
+                if (e.deltaY > 0 && currentZoom <= 75) {
+                    return false;
+                }
+            }
+        }, { passive: false });
+
+        // Prevent Ctrl++, Ctrl+-, Ctrl+0 keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey)) {
+                if (e.key === '+' || e.key === '=' || e.key === '-' || e.key === '0') {
+                    e.preventDefault();
+                    
+                    // Calculate current zoom
+                    let currentZoom = window.devicePixelRatio * 100;
+                    
+                    // Block zoom in beyond 100%
+                    if ((e.key === '+' || e.key === '=') && currentZoom >= 100) {
+                        return false;
+                    }
+                    
+                    // Block zoom out below 75%
+                    if (e.key === '-' && currentZoom <= 75) {
+                        return false;
+                    }
+                }
+            }
+        });
+
+        // Prevent pinch zoom on touch devices
+        let lastDistance = 0;
+        document.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                let distance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                
+                if (lastDistance > 0) {
+                    // If pinch trying to zoom in beyond 100%, prevent
+                    if (distance > lastDistance && window.devicePixelRatio * 100 >= 100) {
+                        e.preventDefault();
+                    }
+                    // If pinch trying to zoom out below 75%, prevent
+                    if (distance < lastDistance && window.devicePixelRatio * 100 <= 75) {
+                        e.preventDefault();
+                    }
+                }
+                lastDistance = distance;
+            } else {
+                lastDistance = 0;
+            }
+        }, { passive: false });
+    </script>
+    
+    <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>
