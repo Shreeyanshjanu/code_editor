@@ -1,8 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:code_editor/services/supabase_auth_service.dart';
+import 'package:code_editor/pages/login_page.dart';
 
-class SignupPage extends StatelessWidget {
+class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
+
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
+  late TextEditingController nameController;
+  late TextEditingController emailController;
+  late TextEditingController passwordController;
+  late TextEditingController confirmPasswordController;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController();
+    emailController = TextEditingController();
+    passwordController = TextEditingController();
+    confirmPasswordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signup() async {
+    // Validation
+    if (nameController.text.isEmpty ||
+        emailController.text.isEmpty ||
+        passwordController.text.isEmpty ||
+        confirmPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    if (passwordController.text != confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    if (passwordController.text.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 8 characters')),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final result = await SupabaseAuthService.signup(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+      username: nameController.text.trim(),
+    );
+
+    setState(() => isLoading = false);
+
+    if (result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
+      );
+      // Navigate back to login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error']),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,10 +109,6 @@ class SignupPage extends StatelessWidget {
                   Expanded(
                     child: SingleChildScrollView(
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
                         padding: EdgeInsets.fromLTRB(40, 0, 40, 0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -40,9 +123,9 @@ class SignupPage extends StatelessWidget {
                                     height: 200,
                                     fit: BoxFit.fill,
                                   ),
-
-                                  Text(
-                                    'Today is a new day. It\'s your day. You shape it.\nSign in to start managing your projects.',
+                                  const Text(
+                                    'Create your account and start coding!',
+                                    textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.black,
@@ -52,8 +135,7 @@ class SignupPage extends StatelessWidget {
                                 ],
                               ),
                             ),
-
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Center(
                               child: Container(
                                 width: 400,
@@ -61,201 +143,118 @@ class SignupPage extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Name',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
+                                    const Text('Name',
+                                        style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 10),
                                     TextField(
+                                      controller: nameController,
                                       decoration: InputDecoration(
                                         hintText: 'John Doe',
                                         filled: true,
                                         fillColor: Colors.grey[200],
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 20),
-                                    Text(
-                                      'Email',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 20),
+                                    const Text('Email',
+                                        style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 10),
                                     TextField(
+                                      controller: emailController,
+                                      keyboardType: TextInputType.emailAddress,
                                       decoration: InputDecoration(
                                         hintText: 'Example@email.com',
                                         filled: true,
                                         fillColor: Colors.grey[200],
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 20),
-                                    // Password Field
-                                    Text(
-                                      'Password',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 20),
+                                    const Text('Password',
+                                        style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 10),
                                     TextField(
+                                      controller: passwordController,
                                       obscureText: true,
                                       decoration: InputDecoration(
                                         hintText: 'At least 8 characters',
                                         filled: true,
                                         fillColor: Colors.grey[200],
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 20,),
-                                    Text(
-                                      'Confirm Password',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 20),
+                                    const Text('Confirm Password',
+                                        style: TextStyle(fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 10),
                                     TextField(
+                                      controller: confirmPasswordController,
                                       obscureText: true,
                                       decoration: InputDecoration(
                                         hintText: 'Same as above',
                                         filled: true,
                                         fillColor: Colors.grey[200],
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 10),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () {},
-                                        child: Text(
-                                          'Forgot Password?',
-                                          style: TextStyle(
-                                            color: Colors.blue,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    // Sign In Button
+                                    const SizedBox(height: 20),
                                     SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton(
-                                        onPressed: () {},
+                                        onPressed: isLoading ? null : _signup,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color(0xFF1a3a3a),
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 15,
-                                          ),
+                                          backgroundColor: const Color(0xFF1a3a3a),
+                                          padding: const EdgeInsets.symmetric(vertical: 15),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
                                         ),
                                         child: Text(
-                                          'Sign up',
-                                          style: TextStyle(
+                                          isLoading ? 'Signing up...' : 'Sign up',
+                                          style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 16,
                                           ),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 20),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Container(
-                                            height: 1,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 15,
-                                          ),
-                                          child: Text('Or'),
-                                        ),
-                                        Expanded(
-                                          child: Container(
-                                            height: 1,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 15),
-                                    // Social Login Buttons
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton(
-                                        onPressed: () {},
-                                        style: OutlinedButton.styleFrom(
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 15,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              'assets/logos/google.png',
-                                              width: 24,
-                                              height: 24,
-                                            ),
-                                            SizedBox(width: 12),
-                                            Text('Sign in with Google'),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
                                     Center(
-                                      child: RichText(
-                                        text: TextSpan(
-                                          text: 'Already have an account? ',
-                                          style: TextStyle(color: Colors.black),
-                                          children: [
-                                            TextSpan(
-                                              text: 'Sign in',
-                                              style: TextStyle(
-                                                color: Colors.blue,
-                                              ),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const LoginPage(),
                                             ),
-                                          ],
+                                          );
+                                        },
+                                        child: RichText(
+                                          text: const TextSpan(
+                                            text: 'Already have an account? ',
+                                            style: TextStyle(color: Colors.black),
+                                            children: [
+                                              TextSpan(
+                                                text: 'Sign in',
+                                                style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 50,)
+                                    const SizedBox(height: 50),
                                   ],
                                 ),
                               ),
@@ -264,17 +263,15 @@ class SignupPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
                   ),
-                  SizedBox(width: 20),
-                  // Right side - Image
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          image: DecorationImage(
+                          image: const DecorationImage(
                             image: AssetImage('assets/login_image.jpg'),
                             fit: BoxFit.cover,
                           ),
