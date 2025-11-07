@@ -1,6 +1,6 @@
+import 'package:code_editor/pages/compiler_page.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:code_editor/pages/login_page.dart';
 import 'package:code_editor/API_keys/supabase_keys.dart'; 
 
 void main() async {
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      home: const CompilerPage(),
       debugShowCheckedModeBanner: false,
     );
   }

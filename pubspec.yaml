@@ -28,8 +28,16 @@ flutter:
   - assets/animations/loading.json
   - assets/animations/login_computer.json
   - assets/animations/welcome.json
-
   - assets/logos/google.png
+  - assets/animations/earth.json
+  - assets/animations/github.json
+  - assets/animations/gmail.json
+  - assets/animations/instagram.json
+  - assets/animations/linkedin.json
+  - assets/animations/phone.json
+  #images
+  - assets/images/developer_profile.jpg
+
 
 
 
