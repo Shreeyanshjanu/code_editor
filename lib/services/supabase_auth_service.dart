@@ -23,21 +23,12 @@ class SupabaseAuthService {
           'message': 'Signup successful! Please check your email to verify.',
         };
       } else {
-        return {
-          'success': false,
-          'error': 'Signup failed',
-        };
+        return {'success': false, 'error': 'Signup failed'};
       }
     } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-      };
+      return {'success': false, 'error': e.message};
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'An error occurred: $e',
-      };
+      return {'success': false, 'error': 'An error occurred: $e'};
     }
   }
 
@@ -59,21 +50,12 @@ class SupabaseAuthService {
           'session': response.session,
         };
       } else {
-        return {
-          'success': false,
-          'error': 'Login failed',
-        };
+        return {'success': false, 'error': 'Login failed'};
       }
     } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-      };
+      return {'success': false, 'error': e.message};
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'An error occurred: $e',
-      };
+      return {'success': false, 'error': 'An error occurred: $e'};
     }
   }
 
@@ -108,15 +90,36 @@ class SupabaseAuthService {
         'message': 'Password reset email sent! Check your inbox.',
       };
     } on AuthException catch (e) {
-      return {
-        'success': false,
-        'error': e.message,
-      };
+      return {'success': false, 'error': e.message};
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'An error occurred: $e',
-      };
+      return {'success': false, 'error': 'An error occurred: $e'};
+    }
+  }
+
+  /// Update password (after reset email link)
+  static Future<Map<String, dynamic>> updatePassword({
+    required String newPassword,
+  }) async {
+    try {
+      print('📤 Updating password...');
+
+      final response = await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+
+      print('📥 Password update response: ${response.user?.id}');
+
+      if (response.user != null) {
+        return {'success': true, 'message': 'Password updated successfully'};
+      } else {
+        return {'success': false, 'error': 'Failed to update password'};
+      }
+    } on AuthException catch (e) {
+      print('❌ AuthException: ${e.message}');
+      return {'success': false, 'error': e.message};
+    } catch (e) {
+      print('❌ Error: $e');
+      return {'success': false, 'error': 'An error occurred: $e'};
     }
   }
 }
